@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup, NavigableString
 import concurrent.futures
-
+import pandas as pd
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
@@ -40,8 +40,6 @@ def getContent(url):
         "licensedBeds": getLicensedBeds(soup),
     }
     
-    print(' | '.join(map(str, data.values())))
-
     return data
 
 
@@ -164,9 +162,14 @@ def getLicensedBeds(soup):
 
 
 def printData(data_list):
-    for data in data_list:
-        print('\t'.join(map(str, data.values())))
 
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 1000)
+    
+    df = pd.DataFrame(data_list)
+    df.to_csv('veri.csv', sep='\t', index=False, header=True)
+    
 
 def main():
     url_list = getUrlList("https://www.whca.org/facility-finder/")
@@ -180,6 +183,8 @@ def main():
         for future in concurrent.futures.as_completed(futures):
             data = future.result()
             data_list.append(data)
+            printData(data_list)
+    
     printData(data_list)
 
 
